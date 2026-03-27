@@ -6,10 +6,28 @@ import { products } from "./data.js";
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
-  const [cartItems, setCartItems] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem("myCart");
+
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("myCart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const [wishlist, setWishlist] = useState(() => {
+    const savedWishlist = localStorage.getItem("myList");
+
+    return savedWishlist ? JSON.parse(savedWishlist) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("myList", JSON.stringify(wishlist));
+  }, [wishlist]);
+
   const [sortBy, setSortBy] = useState("");
-  
+
   // New States for Sidebar & Theme
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -32,8 +50,8 @@ function App() {
         cartItems.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+            : item,
+        ),
       );
     } else {
       setCartItems([...cartItems, { ...product, quantity: 1 }]);
@@ -52,22 +70,19 @@ function App() {
         cartItems.map((item) =>
           item.id === productId
             ? { ...item, quantity: item.quantity - 1 }
-            : item
-        )
+            : item,
+        ),
       );
     }
   }
 
   // Calculate total cart items
-  const cartCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   // Calculate total price
   const cartTotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
-    0
+    0,
   );
 
   // ──── Toggle Wishlist ────
@@ -88,7 +103,8 @@ function App() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    const matchesBrand = selectedBrand === "" || product.brand === selectedBrand;
+    const matchesBrand =
+      selectedBrand === "" || product.brand === selectedBrand;
 
     return matchesSearch && matchesBrand;
   });
@@ -100,7 +116,7 @@ function App() {
     filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
   } else if (sortBy === "rating") {
     filteredProducts = [...filteredProducts].sort(
-      (a, b) => b.rating - a.rating
+      (a, b) => b.rating - a.rating,
     );
   }
 
@@ -152,14 +168,36 @@ function App() {
             <button
               className="nav-btn nav-icon-btn"
               onClick={toggleTheme}
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              title={
+                theme === "dark"
+                  ? "Switch to Light Mode"
+                  : "Switch to Dark Mode"
+              }
             >
               {theme === "dark" ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="12" cy="12" r="4"></circle>
                   <path d="M12 2v2"></path>
                   <path d="M12 20v2"></path>
@@ -179,7 +217,16 @@ function App() {
               title="Cart"
               onClick={() => setIsCartOpen(true)}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <circle cx="8" cy="21" r="1"></circle>
                 <circle cx="19" cy="21" r="1"></circle>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
@@ -189,7 +236,10 @@ function App() {
               )}
             </button>
 
-            <button className="nav-btn primary" onClick={() => setIsCartOpen(true)}>
+            <button
+              className="nav-btn primary"
+              onClick={() => setIsCartOpen(true)}
+            >
               ₹{cartTotal.toLocaleString("en-IN")}
             </button>
           </div>
@@ -206,8 +256,8 @@ function App() {
             <span className="hero-highlight">Is Here</span>
           </h1>
           <p className="hero-description">
-            Discover the latest in premium technology. From powerful computers to
-            cutting-edge technologies, find everything you need in one place.
+            Discover the latest in premium technology. From powerful computers
+            to cutting-edge technologies, find everything you need in one place.
           </p>
           <div className="hero-cta">
             <button className="btn-primary">Explore Products</button>
@@ -335,19 +385,43 @@ function App() {
       </section>
 
       {/* ─── SIDEBAR CART ─── */}
-      <div className={`cart-overlay ${isCartOpen ? "open" : ""}`} onClick={() => setIsCartOpen(false)}>
+      <div
+        className={`cart-overlay ${isCartOpen ? "open" : ""}`}
+        onClick={() => setIsCartOpen(false)}
+      >
         <div className="cart-sidebar" onClick={(e) => e.stopPropagation()}>
           <div className="cart-header">
             <h2 className="cart-title">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <circle cx="8" cy="21" r="1"></circle>
                 <circle cx="19" cy="21" r="1"></circle>
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
               </svg>
               Your Cart
             </h2>
-            <button className="close-cart-btn" onClick={() => setIsCartOpen(false)}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button
+              className="close-cart-btn"
+              onClick={() => setIsCartOpen(false)}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 6 6 18"></path>
                 <path d="m6 6 12 12"></path>
               </svg>
@@ -357,35 +431,74 @@ function App() {
           <div className="cart-body">
             {cartItems.length === 0 ? (
               <div className="cart-empty">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
                   <path d="M3 6h18"></path>
                   <path d="M16 10a4 4 0 0 1-8 0"></path>
                 </svg>
                 <p>Your cart is empty.</p>
-                <button className="btn-secondary" onClick={() => setIsCartOpen(false)}>
+                <button
+                  className="btn-secondary"
+                  onClick={() => setIsCartOpen(false)}
+                >
                   Continue Shopping
                 </button>
               </div>
             ) : (
               cartItems.map((item) => (
                 <div key={item.id} className="cart-item">
-                  <img src={item.image} alt={item.name} className="cart-item-image" />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="cart-item-image"
+                  />
                   <div className="cart-item-details">
                     <h4 className="cart-item-name">{item.name}</h4>
-                    <p className="cart-item-price">₹{item.price.toLocaleString("en-IN")}</p>
+                    <p className="cart-item-price">
+                      ₹{item.price.toLocaleString("en-IN")}
+                    </p>
                     <div className="cart-item-controls">
-                      <button className="cart-item-btn" onClick={() => removeFromCart(item.id)}>
+                      <button
+                        className="cart-item-btn"
+                        onClick={() => removeFromCart(item.id)}
+                      >
                         −
                       </button>
                       <span className="cart-item-qty">{item.quantity}</span>
-                      <button className="cart-item-btn" onClick={() => addToCart(item)}>
+                      <button
+                        className="cart-item-btn"
+                        onClick={() => addToCart(item)}
+                      >
                         +
                       </button>
                     </div>
                   </div>
-                  <button className="remove-item-btn" onClick={() => setCartItems(cartItems.filter(i => i.id !== item.id))} title="Remove completely">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <button
+                    className="remove-item-btn"
+                    onClick={() =>
+                      setCartItems(cartItems.filter((i) => i.id !== item.id))
+                    }
+                    title="Remove completely"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M3 6h18"></path>
                       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
